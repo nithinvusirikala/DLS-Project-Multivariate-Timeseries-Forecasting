@@ -165,9 +165,9 @@ def main():
     print('Number of model parameters is', model_parameters, flush=True)
 
     if args.L1Loss:
-        train_loss = nn.L1Loss(size_average=False).to(device)
+        train_loss_func = nn.L1Loss(size_average=False).to(device)
     else:
-        train_loss = nn.MSELoss(size_average=False).to(device)
+        train_loss_func = nn.MSELoss(size_average=False).to(device)
     eval_mse_loss = nn.MSELoss(size_average=False).to(device)
     eval_l1_loss = nn.L1Loss(size_average=False).to(device)
 
@@ -180,7 +180,7 @@ def main():
         print('Training started')
         for epoch in range(1, args.epochs + 1):
             epoch_start_time = time.time()
-            train_loss, batches_loss = train(data, data.train[0], data.train[1], model, train_loss, optimizer,
+            train_loss, batches_loss = train(data, data.train[0], data.train[1], model, train_loss_func, optimizer,
                                              args.batch_size)
             all_batches_loss += batches_loss
             val_loss, val_rae, val_corr, _, _ = evaluate(data, data.valid[0], data.valid[1], model, eval_mse_loss,
@@ -201,7 +201,7 @@ def main():
         print('Exiting from training early')
 
     # Load the best saved model.
-    with open(args.save, 'rb') as f:
+    with open(args.output_path+"/"+args.save, 'rb') as f:
         model = torch.load(f)
 
     vtest_acc, vtest_rae, vtest_corr, _, _ = evaluate(data, data.valid[0], data.valid[1], model, eval_mse_loss,
