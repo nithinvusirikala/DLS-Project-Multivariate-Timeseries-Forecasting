@@ -1,4 +1,5 @@
 from layer import *
+import numpy as np
 
 
 class MTGNN_Model(nn.Module):
@@ -9,6 +10,8 @@ class MTGNN_Model(nn.Module):
         self.num_nodes = num_nodes
         self.dropout = dropout
         self.predefined_A = predefined_A
+        if predefined_A:
+            self.predefined_A = np.loadtxt(open(predefined_A), delimiter=',')
 
         ## Temporal Convolution
         self.filter_convs = nn.ModuleList()

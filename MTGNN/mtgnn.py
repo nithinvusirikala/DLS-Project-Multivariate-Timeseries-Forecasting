@@ -94,7 +94,6 @@ def train(data, X, Y, model, loss_function, optimizer, batch_size):
     average_loss = sum(total_loss) / n_samples
     return average_loss, total_loss
 
-
 parser = argparse.ArgumentParser(description='PyTorch Time series forecasting')
 parser.add_argument('--data', type=str, default='./data/solar.txt',
                     help='location of the data file')
@@ -110,6 +109,7 @@ parser.add_argument('--normalize', type=int, default=2)
 parser.add_argument('--device', type=str, default='cuda:1', help='')
 parser.add_argument('--gcn_true', type=bool, default=True, help='whether to add graph convolution layer')
 parser.add_argument('--buildA_true', type=bool, default=True, help='whether to construct adaptive adjacency matrix')
+parser.add_argument('--pre_defined_graph_path', type=str, default=None, help='Pre Defined Graph path')
 parser.add_argument('--gcn_depth', type=int, default=2, help='graph convolution depth')
 parser.add_argument('--num_nodes', type=int, default=137, help='number of nodes/variables')
 parser.add_argument('--dropout', type=float, default=0.3, help='dropout rate')
@@ -151,7 +151,7 @@ def main():
     data = DataLoader(args.data, 0.6, 0.2, device, args.horizon, args.seq_in_len, args.sample_data, args.normalize)
 
     model = MTGNN_Model(args.gcn_true, args.buildA_true, args.gcn_depth, args.num_nodes,
-                        device, dropout=args.dropout, subgraph_size=args.subgraph_size,
+                        device, predefined_A=args.pre_defined_graph_path, dropout=args.dropout, subgraph_size=args.subgraph_size,
                         node_dim=args.node_dim, dilation_exponential=args.dilation_exponential,
                         conv_channels=args.conv_channels, residual_channels=args.residual_channels,
                         skip_channels=args.skip_channels, end_channels=args.end_channels,
@@ -205,8 +205,7 @@ def main():
         model = torch.load(f)
 
     vtest_acc, vtest_rae, vtest_corr, _, _ = evaluate(data, data.valid[0], data.valid[1], model, eval_mse_loss,
-                                                      eval_l1_loss,
-                                                      args.batch_size)
+                                                      eval_l1_loss, args.batch_size)
     test_acc, test_rae, test_corr, predicted_output, actual_output = evaluate(data, data.test[0], data.test[1], model,
                                                                               eval_mse_loss, eval_l1_loss,
                                                                               args.batch_size)
